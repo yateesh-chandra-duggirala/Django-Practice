@@ -334,3 +334,65 @@ The members view does the following :
 - (practice-world) C:\Users\Yateesh Chandra\Django-Practice\first_project>py manage.py runserver
 Run the above command and check at http://127.0.0.1:8000/members/
 
+Create a new template details.html :
+<!DOCTYPE html>
+<html>
+    <body>
+        <h1>{{mymember.firstname}} {{mymember.lastname}}</h1>
+        
+        <p>
+            Phone: {{mymember.phone}}
+        </p>
+        <p>
+            Member since {{mymember.joined_date}}
+        </p>
+        <p>
+            Back To <a href= "/members"> Members</a>
+        </p>
+    </body>
+</html>
+
+Change a little bit code for the all_templates
+<!DOCTYPE html>
+<html>
+    <body>
+        <h1>
+            Members
+        </h1>
+
+        <ul>
+            {% for x in mymembers %}
+            <li>
+                <a href = "details/{{x.id}}">{{x.firstname}} {{x.lastname}}</a>
+            </li>
+            {% endfor %}
+        </ul>
+    </body>
+</html>
+
+Add the function details() view  from 
+# views.py :
+
+def details(request, id):
+  mymember = Member.objects.get(id=id)
+  template = loader.get_template('details.html')
+  context = {
+    'mymember': mymember,
+  }
+  return HttpResponse(template.render(context, request))
+
+We need to make sure that the 'details/' url point to the correct view, with id as parameter.
+
+Open the urls.py file and add the details view to the urlspattern list.
+
+# urls.py
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('members/', views.members, name = "members"),
+    path('members/details/<int:id>', views.details, name = 'details'),
+]
+
+Then, We have to click on the Name to get the details about that ID from link :
+http://127.0.0.1:8000/members/
