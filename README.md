@@ -510,3 +510,87 @@ def testing(request):
 </html>
 
 Run the server at 127.0.0.1:8000/testing to check how it is working.
+
+#-------------------------------END OF MODULE 2 -------------------------------------------#
+
+#-------------------------------MODULE - 3. DISPLAY --------------------------------------#
+
+# Django Admin :
+Django Admin is actually a CRUD user interface of all models.!
+To enter the admin user interface, start the server by navigating to the folder and execute this command :
+py manage.py runserver -- and check at 127.0.0.1:8000/admin/
+
+This leads to admin because of the file : my_tennis_club/my_tennis_club/urls.py
+
+The urlpatterns[] list takes requests going to admin/ and sends them to admin.site.urls, which is a part of a built-in application that comes with Django and contains a lot of functionality and user interfaces, one of them being the log-in user interface.
+
+- Create User:
+To be able to log into the admin application, we need to create a user.
+py manage.py createsuperuser
+
+SNAPSHOT :
+Username (leave blank to use default name): shiva
+Email address: shiva@gmail.com
+Password: shiva
+Password (again): shiva
+Bypass password validation and create user anyway? [y/N]: y
+Superuser created successfully.
+
+Just runserver and go to "/admin"
+After that DJANGO Administration , It will site administration - Authentication and Authorization. We can Add groups and users here
+
+The members model is missing, as it should be, you have to tell Django which models that should be visible in the admin interface
+
+# Include Member in the Admin Interface
+To include, The member model in the admin interface, we have to tell Django that this model should be visible in the admin interface. This is done in a file called admin.py and is located in your app's folder, which in our case in the members folder. Open it and it should look like this:
+
+Insert a couple of lines here to make the member model visible in the admin page in admin.py :
+
+from django.contrib import admin
+from .models import Members
+
+admin.site.register(Members)
+
+Now when we see admin page is registered with Models, We get Members operation along with Group and Users
+
+Click 'Members' and see the records that we inserted and when we click on the Member Object, We can see the details
+
+By default, "Member Object (1)" is visible instead of "firstname" and "lastname". 
+
+We can Set the List Display.
+
+# Make the list Display More Reader-Friendly
+When you display a model as a list, Django displays each record as the string representation of the record object, which in our case is "Member Object(1)"
+
+To change this to a more reader-friendly format, we have two choices:
+1. Change the string representation function, __str__() of the Member Model
+2. Set the list_details property of the Member Model
+
+Add this in models.py:
+def __str__(self):
+    return f"{self.firstname} {self.lastname}"
+
+# Set list_display
+- We can control the fields to display by specifying them in a list_display property in the admin.py
+- First create a MemberAdmin() class and specify the list_display tuple, like this.
+
+Change in the admin.py :
+
+from django.contrib import admin
+from .models import Members
+
+class MemberAdmin(admin.ModelAdmin):
+    list_display = ("firstname","lastname", "entry_Date")
+
+admin.site.register(Members, MemberAdmin)
+
+# Update Members
+- Now we are able to create, update and delete members in our database and we start by giving them all a date when they become members
+
+Click the first member, Bhaskar to open the record for editing, and give him a joined_date.
+
+# Add Members 
+- We can add members into our Database and fill valid details
+
+# Delete Members
+- We can delete Members from the list as well from the http://127.0.0.1:8000/admin/members/members/ .
