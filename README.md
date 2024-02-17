@@ -396,3 +396,36 @@ urlpatterns = [
 
 Then, We have to click on the Name to get the details about that ID from link :
 http://127.0.0.1:8000/members/
+
+
+# Add Master Template
+
+By using The Extend Tag, Django provides a way of making a "parent template" that you can include in all pages to do the stuff that is the same in all pages. Let us start by creating a template called "master.html"
+
+## Master.html :
+
+Now the two templates (all_members.html and details.html) can use this master.html template.
+
+This is done by including the master template with the {% extends %} tag, and inserting a title block and a content black
+
+Modify the all_templates.html a bit :
+
+{% extends "master.html" %}
+
+{% block title %}
+    Students - List
+{% endblock %}
+
+{% block content}
+        <h1>
+            Members
+        </h1>
+
+        <ul>
+            {% for x in mymembers %}
+            <li>
+                <a href = "details/{{x.id}}">{{x.firstname}} {{x.lastname}}</a>
+            </li>
+            {% endfor %}
+        </ul>
+{% endblock %}

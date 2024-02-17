@@ -1,6 +1,10 @@
-<!DOCTYPE html>
-<html>
-    <body>
+{% extends "master.html" %}
+
+{% block title %}
+    Students - List
+{% endblock %}
+
+{% block content %}
         <h1>
             Members
         </h1>
@@ -12,5 +16,4 @@
             </li>
             {% endfor %}
         </ul>
-    </body>
-</html>
+{% endblock %}
