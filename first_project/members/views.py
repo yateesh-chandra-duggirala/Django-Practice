@@ -30,10 +30,23 @@ def details(request, id) :
     # Load the "details" template.
     template = loader.get_template('details.html')
 
-    # Prepare the contexr data to be passed to the template.
+    # Prepare the context data to be passed to the template.
     context = {
         'mymember' : mymember
     }
 
     # Render the template with the provided context and return it as an HTTP response
+    return HttpResponse(template.render(context, request))
+
+# Define the main function that returns main template by rendering it.
+def main(request):
+    template = loader.get_template('main.html')
+    return HttpResponse(template.render())
+
+# Define a testing Function
+def testing(request):
+    template = loader.get_template('template.html')
+    context = {
+        'fruits' : ['Apple', 'Banana', 'Cherry'],
+    }
     return HttpResponse(template.render(context, request))

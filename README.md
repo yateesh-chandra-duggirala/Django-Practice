@@ -1,6 +1,6 @@
-**-------------------------------MODULE - 1. DJANGO -------------------------------------- **
+#**-------------------------------MODULE - 1. DJANGO -------------------------------------- **#
 
-Django : 
+### Django : 
 - Django is a python framework that makes it easier to create the websites using python
 - Django takes care of the difficult stuff such that we can concentrate on building our web app
 - Django emphasizes the reusability off components that follows DRY( Donot Repeat Yourself), and comes with Ready to use features like login system, database connection and CRUD operations (Create Read Update and Delete) 
@@ -141,10 +141,10 @@ urlpatterns = [
     path('', include('members.urls')),
     path('admin/', admin.site.urls),
 ]
-# Run the server
+-- Run the server
 
 
-Templates:
+## Templates:
 - As we learned that the result should be in html, and it should be created in a template, so let us do that.
 - Create a templates folder inside the members folder, and create a HTML file named myfirst.html
 <!DOCTYPE html>
@@ -220,7 +220,7 @@ To open python shell:	py manage.py shell
 Let us write the piece of code to look at the empty member table:
 >>> from members.models import Members
 >>> Members.objects.all()
-# Outputs >QuerySet [ ]>
+-- Outputs >QuerySet [ ]>
 
 A QuerySet is a collection of data from a database.
 Add a record to the table, by executing these two lines:
@@ -277,19 +277,19 @@ py manage.py makemigrations members
 #Now Migrate
 py manage.py migrate
 
-# Add the data to check
+## Add the data to check
 >>> mem = Members(firstname = 'Bhaskar', lastname = 'Praveen', phone = '9395660921')
 >>> mem.save()
 
 
--------------------------------END OF MODULE 1 ---------------------------------------------
+#-------------------------------END OF MODULE 1 -------------------------------------------#
 
--------------------------------MODULE - 2. DISPLAY -------------------------------------- 
+#-------------------------------MODULE - 2. DISPLAY --------------------------------------#
 
 Create Template : 
 After creating Models, with the fields and data we want in them, it is time to display the data in a web page. Create a HTML file named 'all_members.html' and place in templates folder.
 
-# all_members.html :
+## all_members.html :
 <!DOCTYPE html>
 <html>
 <body>
@@ -311,7 +311,7 @@ After creating Models, with the fields and data we want in them, it is time to d
 Modify the existing View : 
 We can send it to the template like this :
 
-# views.py :
+## views.py :
 from django.http import HttpResponse
 from django.template import loader
 from .models import Member
@@ -371,7 +371,7 @@ Change a little bit code for the all_templates
 </html>
 
 Add the function details() view  from 
-# views.py :
+## views.py :
 
 def details(request, id):
   mymember = Member.objects.get(id=id)
@@ -385,7 +385,7 @@ We need to make sure that the 'details/' url point to the correct view, with id 
 
 Open the urls.py file and add the details view to the urlspattern list.
 
-# urls.py
+## urls.py
 from django.urls import path
 from . import views
 
@@ -429,3 +429,84 @@ Modify the all_templates.html a bit :
             {% endfor %}
         </ul>
 {% endblock %}
+
+# Add Main Index Page
+
+Let us create a main page that lands us when we open the default page "127.0.0.1:8000/"
+{% extends "master.html" %}
+
+{% block title %}
+    Students
+{% endblock %}
+
+{% block content %}
+    <h1>
+        Students Group
+    </h1>
+
+    <h3>
+        Students
+    </h3>
+
+    <p>
+        Check out all our <a href="members/">members</a>
+    </p>
+{% endblock %}
+
+
+Add the root URL to the urls.py path :
+path('', views.main, name = "main")
+
+
+- Add 404 Template :
+For this, We need to change the settings.py by setting to :
+    DEBUG = False
+    ALLOWED_HOSTS = ['*']    //Set a proper host when DEBUG is set to false.
+
+By default, The settings.py searches for 404.html in the templates 
+Or else We can set a customized 404.html from templates folder of members according to our wish.
+
+# 404.html
+<!DOCTYPE html>
+<html>
+    <body>
+        <h1>
+            OOPS...!
+        </h1>
+        <p>
+            Unable to load the requested file.
+        </p>
+    </body>
+</html>
+
+Now if any api is applied in the address bar that does not exist, we will get 404 template.
+
+- Add Test View 
+We can test code without interrupting the main project.
+We can add a test view that is exactly like the one we create :
+
+- Let us add a view called "testing" in the views.py
+
+def testing(request):
+    template = loader.get_template('template.html')
+    context = {
+        'fruits' : ['Apple', 'Banana', 'Cherry'],
+    }
+    return HttpResponse(template.render(context, request))
+
+- We have to redirect the testing view to url "/testing" and add it to the urls.py
+    path('testing/', views.testing, name = 'testing'),
+
+- Create a Template 'template.html'
+<!DOCTYPE html>
+<html>
+    <body>
+        {% for x in fruits %}
+            <h1>{{x}}</h1>
+        {% endfor %}
+
+        <p>In Views.py you can see what the fruits variable looks like...</p>
+    </body>
+</html>
+
+Run the server at 127.0.0.1:8000/testing to check how it is working.
