@@ -45,8 +45,10 @@ def main(request):
 
 # Define a testing Function
 def testing(request):
-    template = loader.get_template('template.html')
+    mymembers = Members.objects.all().values()
+    template = loader.get_template('sample.html')
     context = {
-        'fruits' : ['Apple', 'Banana', 'Cherry'],
+        'mymembers' : mymembers,
     }
     return HttpResponse(template.render(context, request))
+
