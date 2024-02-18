@@ -284,7 +284,7 @@ py manage.py migrate
 
 #-------------------------------END OF MODULE 1 -------------------------------------------#
 
-#-------------------------------MODULE - 2. DISPLAY --------------------------------------#
+#-------------------------------MODULE - 2. DISPLAY DATA--------------------------------------#
 
 Create Template : 
 After creating Models, with the fields and data we want in them, it is time to display the data in a web page. Create a HTML file named 'all_members.html' and place in templates folder.
@@ -513,7 +513,7 @@ Run the server at 127.0.0.1:8000/testing to check how it is working.
 
 #-------------------------------END OF MODULE 2 -------------------------------------------#
 
-#-------------------------------MODULE - 3. DISPLAY --------------------------------------#
+#-------------------------------MODULE - 3. DJANGO ADMIN--------------------------------------#
 
 # Django Admin :
 Django Admin is actually a CRUD user interface of all models.!
@@ -594,3 +594,209 @@ Click the first member, Bhaskar to open the record for editing, and give him a j
 
 # Delete Members
 - We can delete Members from the list as well from the http://127.0.0.1:8000/admin/members/members/ .
+
+
+#-------------------------------END OF MODULE 3 -------------------------------------------#
+
+#-------------------------------MODULE - 4. DJANGO SYNTAX--------------------------------------#
+
+- Django Template Variables:
+    We can render variables by putting them inside {{ }} brackets
+Create Variable in view :
+    The variable firstname in the example above was sent to the template via a view.
+
+# views.py :
+from django.http import HttpResponse
+from django.template import loader
+
+def testing(request):
+  template = loader.get_template('sample.html')
+  context = {
+    'firstname': 'Linus',
+  }
+  return HttpResponse(template.render(context, request))
+
+Create Variable in template :
+- You can also create variables directly in the template, by using the {% with %} template tag.
+- The variable is available until the {%endwith%} tag appears.
+
+{% with firstname="Tobias" %}
+<h1>Hello {{ firstname }}, how are you?</h1>
+{% endwith %}
+
+# Data from a model :
+- The example above showed an easy approach on how to create and use variables in a template.
+- Normally, Most of the external data you want to use in a template, comes from a model.
+- We have created a model in the previous chapters, called member, which we will use in many examples in the next chapters of this tutorial.
+- To get the data from the member model, we will have to import it in the views.py file and extract data from it in the view.
+
+views.py : 
+from django.http import HttpResponse, HttpResponseRedirect
+from django.template import loader
+from .models import Member
+
+def testing(request):
+  mymembers = Member.objects.all().values()
+  template = loader.get_template('template.html')
+  context = {
+    'mymembers': mymembers,
+  }
+  return HttpResponse(template.render(context, request))
+
+Now we can use the data in the template :
+<ul>
+  {% for x in mymembers %}
+    <li>{{ x.firstname }}</li>
+  {% endfor %}
+</ul>
+
+- For loop loops through the members.
+
+# Template Tags:
+- In Django templates, you can perform programming logic executing if statements and for loops.
+- These keywords, if and for are called "template tags" in Django.
+- To execute template tags, we surround them {% %} brackets.
+
+{% if greeting == 1 %}
+<h1>Hello</h1>
+{% else %}
+<h1> Bye </h1>
+{% endif %}
+
+# Django Code:
+- The template tags are a way of telling Django that here comes something else than plain HTML.
+- The template tags allows us to do some programming on the server before sending HTML to the client.
+
+Following are some Tags:
+
+autoescape  :	Specifies if autoescape mode is on or off
+block	    :   Specifies a block section
+comment	    :   Specifies a comment section
+csrf_token  :   Protects forms from Cross Site Request Forgeries
+cycle	    :   Specifies content to use in each cycle of a loop
+debug	    :   Specifies debugging information
+extends	    :   Specifies a parent template
+filter      :   Filters content before returning it
+firstof	    :   Returns the first not empty variable
+for	        :   Specifies a for loop
+if	        :   Specifies a if statement
+ifchanged   :   Used in for loops. Outputs a block only if a value has changed since the last iteration
+include	    :   Specifies included content/template
+load	    :   Loads template tags from another library
+lorem	    :   Outputs random text
+now	        :   Outputs the current date/time
+regroup	    :   Sorts an object by a group
+resetcycle	:   Used in cycles. Resets the cycle
+spaceless	:   Removes whitespace between HTML tags
+templatetag	:   Outputs a specified template tag
+url	        :   Returns the absolute URL part of a URL
+verbatim	:   Specifies contents that should not be rendered by the template engine
+widthratio	:   Calculates a width value based on the ratio between a given value and a max value
+with	    :   Specifies a variable to use in the block
+
+# Django if Tag :
+- If Statement :
+    An if statement evaluates a variable and executes a block of code if the value is true.
+- Elif :
+    The Elif keyword says that "if the previous conditions were not true, then try this condition".
+- Else :
+    The Else keyword catches anything which is not caught by the preceding conditions.
+
+{% if greeting == 1 %}
+  <h1>Hello</h1>
+{% elif greeting == 2 %}
+  <h1>Welcome</h1>
+{% else %}
+  <h1>Goodbye</h1>
+{% endif %} 
+
+Operators :
+    The above examples uses the == operator, which is used to check if a variable is equal to a value, but there are many other operators we can use, or you can even drop the operator if you just want to check if a variable is not empty.
+
+Symbols used are : == , != , < , > , <= , >=  , and , or , in , not in , is , is not .
+
+For Loops :
+- For loop is used for iterating over a sequence, like looping over items in the array, a list, a dictionary.
+
+Loop through the items of a list :
+{% for x in fruits %}
+    <h1>{{ x }}</h1>
+{% endfor %}
+
+Reversed :
+    The reversed keyword is used when you want to do the loop in reversed order.
+
+Empty :
+    The empty keyword can be used if you want to do something special if the object is empty.
+
+<ul>
+    {% for x in emptytestobject %}
+        <li>{{ x.firstname }}</li>
+    {% empty %}
+        <li>No members</li>
+    {% endfor %}
+</ul>
+
+# Loop Variables :
+    Django has some variables that are available for you inside a loop:
+
+forloop.counter     :   The current iteration, starting at 1.
+forloop.counter()   :   The current iteration, starting at 0.
+forloop.first       :   Allows you to test if the loop is on its first iteration.
+forloop.last        :   Allows you to test if the loop is on its last iteration.
+forloop.revcounter  :   The current iteration if you start at the end and count backwards, ending up at 1.
+forloop.revcounter():   The current iteration if you start at the end and count backwards, ending up at 0.
+
+Comments :
+    Comments allows you to have sections of code that should be ignored.
+
+<h1>Welcome Everyone</h1>
+{% comment %}
+  <h1>Welcome ladies and gentlemen</h1>
+{% endcomment %}
+
+Comment Description :
+    You can add a message to your comment, to help you remember why you wrote the comment, or as message to other people reading the code
+
+<h1>Welcome Everyone</h1>
+{% comment "this was the original welcome message" %}
+    <h1>Welcome ladies and gentlemen</h1>
+{% endcomment %}
+
+Smaller Comments :
+    You can also use the {#....#} tags when commenting out code, which can be easier for smaller comments:
+
+Comment in Views:
+    Views are written in Python and python comments are written with the # Character.
+
+Include :
+    The Include tag allows you to include a template inside the current template. This is useful when you have a block of content that is same for many pages.
+
+- templates/footer.html:
+<p>You have reached the bottom of this page, thank you for your time.</p>
+
+- templates/template.html:
+<h1>Hello</h1>
+<p>This page contains a footer in a template.</p>
+{% include 'footer.html' %} 
+
+Variables in Include :
+    You can send variables into the template by using the with keyword.
+    In the include file, you refer to the variable by using the {{ variablename }} syntax :
+
+- templates/mymenu.html:
+<div>HOME | {{ me }} | ABOUT | FORUM | {{ sponsor }}</div>
+
+- templates/template.html:
+<!DOCTYPE html>
+<html>
+<body>
+
+{% include "mymenu.html" with me="TOBIAS" sponsor="W3SCHOOLS" %}
+
+<h1>Welcome</h1>
+
+<p>This is my webpage</p>
+
+</body>
+</html> 
