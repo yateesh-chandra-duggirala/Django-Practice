@@ -800,3 +800,179 @@ Variables in Include :
 
 </body>
 </html> 
+
+
+# Django QuerySet :
+-   A QuerySet is a collection of data from a database.
+-   A QuerySet is built-up as a list of objects.
+-   QuerySet makes it easier to get the data you actually need, by allowing you to filter and order the data at an early stage.
+-   In this tutorial, we will be querying data from the Member table.
+
+Querying Data:
+- In views.py, we have a view for testing called testing where we will test different queries.
+- In the example below, we use the .all() method to get all the records and fields of the Member model :
+
+from django.http import HttpResponse
+from django.template import loader
+from .models import Member
+
+def testing(request):
+  mydata = Member.objects.all()
+  template = loader.get_template('sample.html')
+  context = {
+    'mymembers': mydata,
+  }
+  return HttpResponse(template.render(context, request))
+
+
+The Object is placed in a variable called mydata, and is sent to the template via the context object as mymembers, and looks like this:
+
+<QuerySet [
+  <Member: Member object (1)>,
+  <Member: Member object (2)>,
+  <Member: Member object (3)>,
+  <Member: Member object (4)>,
+  <Member: Member object (5)>,
+  <Member: Member object (6)>
+]>
+
+As you can see, our Member model contains 5 records, and are listed inside the QuerySet as 5 objects. In the template you can use the mymembers object to generate content :
+<table border='1'>
+  <tr>
+    <th>ID</th>
+    <th>Firstname</th>
+    <th>Lastname</th>
+  </tr>
+  {% for x in mymembers %}
+    <tr>
+      <td>{{ x.id }}</td>
+        <td>{{ x.firstname }}</td>
+      <td>{{ x.lastname }}</td>
+    </tr>
+  {% endfor %}
+  </table>
+
+
+# Get Data
+- There are different methods to get data from a model into a QuerySet.
+
+The values() Method :
+- The values() method allows you to return each object as a python dictionary, with the names and values as key/value pairs :
+
+from django.http import HttpResponse
+from django.template import loader
+from .models import Member
+
+def testing(request):
+  mydata = Member.objects.all().values()
+  template = loader.get_template('template.html')
+  context = {
+    'mymembers': mydata,
+  }
+  return HttpResponse(template.render(context, request))
+
+
+Return Specific Columns :
+- The values_list() method allows you to return only the columns that you specify. Return only the firstname columns:
+
+from django.http import HttpResponse
+from django.template import loader
+from .models import Member
+
+def testing(request):
+  mydata = Member.objects.values_list('firstname')
+  template = loader.get_template('template.html')
+  context = {
+    'mymembers': mydata,
+  }
+  return HttpResponse(template.render(context, request))
+
+Return Specific Rows :
+  - You can filter the search to only return specific rows/ records, by using the filter() method.
+
+from django.http import HttpResponse
+from django.template import loader
+from .models import Member
+
+def testing(request):
+  mydata = Member.objects.filter(firstname='Emil').values()
+  template = loader.get_template('template.html')
+  context = {
+    'mymembers': mydata,
+  }
+  return HttpResponse(template.render(context, request))
+
+1. QuerySet filter :
+    The filter() method is used to filter your search, and allows you to return only the rows that matches the search term.
+
+mydata = Members.objects.filter(firstname = 'Yateesh').values () is same as the SQL Statement
+select * from Members where firstname = 'Yateesh';
+
+2. AND :
+    The filter() method takes the arguments as **kwargs, so you can filter on more than one field by seperating them by a comma
+
+mydata = Members.objects.filter(firstname = 'Yateesh', id = 1).values() is same as the SQL Statement
+select * from Members where firstname = 'Yateesh' and id = 1;
+
+3. OR :
+    Multiple filter() methods need to be created by seperating with '|' pipe character. The results will merge into one model.
+
+mydata = Member.objects.filter(firstname='Yateesh').values() | Member.objects.filter(firstname='Kumar').values() is same as the SQL Statement
+select * from Members where firstname = 'Yateesh' or lastname = 'Kumar';
+
+Also we can use Q Method from django.db.models
+from django.db.models import Q
+mydata = Member.objects.filter(Q(firstname='Emil') | Q(firstname='Tobias')).values()
+
+4. Field LookUps :
+    This helps in place of like operator
+
+mydata = Member.objects.filter(firstname__startswith='L').values() is same as the SQL statement.
+select * from Members where firstname like 'L%'
+
+5. Some more similar Expressions :
+
+contains	    :   Contains the phrase
+icontains	    :   Same as contains, but case-insensitive
+date	        :   Matches a date
+day	            :   Matches a date (day of month, 1-31) (for dates)
+endswith	    :   Ends with
+iendswith	    :   Same as endswidth, but case-insensitive
+exact	        :   An exact match
+iexact	        :   Same as exact, but case-insensitive
+in	            :   Matches one of the values
+isnull	        :   Matches NULL values
+gt	            :   Greater than
+gte	            :   Greater than, or equal to
+hour	        :   Matches an hour (for datetimes)
+lt	            :   Less than
+lte	            :   Less than, or equal to
+minute	        :   Matches a minute (for datetimes)
+month	        :   Matches a month (for dates)
+quarter	        :   Matches a quarter of the year (1-4) (for dates)
+range	        :   Match between
+regex	        :   Matches a regular expression
+iregex	        :   Same as regex, but case-insensitive
+second	        :   Matches a second (for datetimes)
+startswith	    :   Starts with
+istartswith	    :   Same as startswith, but case-insensitive
+time	        :   Matches a time (for datetimes)
+week	        :   Matches a week number (1-53) (for dates)
+week_day	    :   Matches a day of week (1-7) 1 is sunday
+iso_week_day	:   Matches a ISO 8601 day of week (1-7) 1 is monday
+year	        :   Matches a year (for dates)
+iso_year	    :   Matches an ISO 8601 year (for dates)
+
+6. Order By :
+    To sort QuerySets, Django uses the order_by() method in ascending order.
+    
+mydata = Member.objects.all().order_by('firstname').values() is same as SQL Statement:
+SELECT * FROM members ORDER BY firstname;
+
+    To sort QuerySets in Descending Order :
+mydata = Member.objects.all().order_by('-firstname').values()
+SELECT * FROM members ORDER BY firstname desc;
+
+    Multiple order By can be done :
+mydata = Member.objects.all().order_by('lastname', '-id').values()
+SELECT * FROM members ORDER BY lastname, Id DESC;
