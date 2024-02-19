@@ -52,3 +52,20 @@ def testing(request):
     }
     return HttpResponse(template.render(context, request))
 
+# Define a getTesting Function
+def getTesting(request):
+    mydata = Members.objects.values_list('firstname')
+    template = loader.get_template('get.html')
+    context = {
+        'mymembers': mydata,
+    }
+    return HttpResponse(template.render(context, request))
+
+# Define a filterTesting function
+def filterTesting(request):
+    mydata = Members.objects.filter(firstname='Yateesh').values()
+    template = loader.get_template('filter.html')
+    context = {
+        'mymembers': mydata,
+    }
+    return HttpResponse(template.render(context, request))
