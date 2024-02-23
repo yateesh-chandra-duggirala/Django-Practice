@@ -801,6 +801,9 @@ Variables in Include :
 </body>
 </html> 
 
+#-------------------------------END OF MODULE 4 -------------------------------------------#
+
+#-------------------------------MODULE - 5. DJANGO QUERYSETS--------------------------------------#
 
 # Django QuerySet :
 -   A QuerySet is a collection of data from a database.
@@ -975,4 +978,105 @@ SELECT * FROM members ORDER BY firstname desc;
 
     Multiple order By can be done :
 mydata = Member.objects.all().order_by('lastname', '-id').values()
+
 SELECT * FROM members ORDER BY lastname, Id DESC;
+
+
+#-------------------------------END OF MODULE 5 -------------------------------------------#
+
+#-------------------------------MODULE - 6. STATIC FILES--------------------------------------#
+
+# Create a Static Folder
+- When Building web applications, You probably want to add some static files like images or CSS Files.
+- Start by creating a folder named static in your project, the same place where you created the templates folder.
+- The name of the folder needs to be static.
+- Add a CSS file in static folder - first.css
+
+first.css :
+body {
+    background-color: lightblue;
+    font-family: verdana;
+  }
+
+- Make the changes accordingly to the get.html :
+{% load static %}
+<!DOCTYPE html>
+<html>
+  <link rel="stylesheet" href="{% static 'first.css' %}">
+<body>
+
+<h1>Welcome</h1>
+
+<p>This is my webpage</p>
+
+<table border='1'>
+    {% for x in mymembers %}
+      <tr>
+        <td>{{ x }}</td>
+      </tr>
+    {% endfor %}
+</table>
+
+</body>
+</html> 
+
+Do not forget to set the Debug status to True from settings.py
+But most of the time we prefer to run the server with the Debug to be false. 
+If debug is set to False, we can not run the static files. 
+For that we need to install another library called "WhiteNoise".
+
+
+Django does not have a built-in solution for serving static files, atleast not in production when DEBUG has to be False. We have to use a third-party solution to accomplish this. We will use WhiteNoise, which is a python library, built for serving static files.
+
+Install WhiteNoise: !pip install whitenoise
+
+Modify Settings:
+    To make Django aware of you wanting to run WhiteNoise, you have to specify it in the MIDDLEWARE list in settings.py file.
+        'whitenoise.middleware.WhiteNoiseMiddleware',
+
+Collect Static Files :
+    There are one more action you have to perform before you can serve the static files by collecting them and put them into one specified folder.
+
+### Handle Static Files:
+- Static Files in your project, like stylesheets, JavaScripts and images are not handled automatically by Django when DEBUG = False.
+- When DEBUG = True, this worked fine, all we had to do was to put them in the static folder of the application.
+- When DEBUG = False, static files have to be collected and put in a specified folder before we can use it.
+
+### Collect Static Files:
+- To collect all necessary static files for your project, start by specifying a STATIC_ROOT property in the settings.py file. This specifies a folder where you want to collect your static files. You can call the folder whatever you like, we will call it production files.
+
+settings.py:
+STATIC_ROOT = BASE_DIR / 'productionfiles'
+STATIC_URL = 'static/'
+
+Run the command that can put all static files of the project into this folder, but django has a command that do this for you :
+py manage.py collectstatic
+
+Now we have collected the static files of your project, and if you have installed WhiteNoise. And the Static files will be added and will finally work.
+
+### Global Static Files :
+- Add a Global CSS File:
+    We have learned how to add a static files in the application's static folder, and how to use it in the application. But what if other applications in your project wants to use the file? Then we have to create a folder on the root directory and put the file here. It is not enough to create a static folder in the root directory, and Django will fix the rest. We have to Django where to look for these static files.
+    Start by creating a folder on the project's root level, this folder can be called whatever you like, I will call it "mystaticFiles".
+
+### Modify Settings :
+- You will have to tell Django to also look for static files in the mystaticfiles folder in the root directory, this is done in the settings.py file :
+
+Add a STATICFILES_DIRS list :
+STATICFILES_DIRS = [
+    BASE_DIR / 'mystaticfiles'
+]
+
+In the STATICFILES_DIRS list, you can list all the directories where Django should look for static files.
+The BASE_DIR keyword represents the root directory of the project, and together with the "/mystaticfiles", it means the mystaticfiles folder in the root directory.
+
+### Search Order :
+If you have files with the same name, Django will use the first occurence of the file.
+The search starts in the directories listed in STATICFILES_DIRS, using the order you have provided. Then, if the file is not found, the search continued in the static folder of each application.
+
+### Modify the Template :
+- Now you have global CSS file for the entire project, which can be accessed from all applications. To use it in a template, use the same syntax as you did for the myfirst.css file. Begin the template with the following:
+<link rel="stylesheet" href="{% static 'myglobal.css' %}">
+After that we again need to collectstatic
+
+#-------------------------------END OF MODULE 6 -------------------------------------------#
