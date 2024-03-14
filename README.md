@@ -800,3 +800,283 @@ Variables in Include :
 
 </body>
 </html> 
+
+#-------------------------------END OF MODULE 4 -------------------------------------------#
+
+#-------------------------------MODULE - 5. DJANGO QUERYSETS--------------------------------------#
+
+# Django QuerySet :
+-   A QuerySet is a collection of data from a database.
+-   A QuerySet is built-up as a list of objects.
+-   QuerySet makes it easier to get the data you actually need, by allowing you to filter and order the data at an early stage.
+-   In this tutorial, we will be querying data from the Member table.
+
+Querying Data:
+- In views.py, we have a view for testing called testing where we will test different queries.
+- In the example below, we use the .all() method to get all the records and fields of the Member model :
+
+from django.http import HttpResponse
+from django.template import loader
+from .models import Member
+
+def testing(request):
+  mydata = Member.objects.all()
+  template = loader.get_template('sample.html')
+  context = {
+    'mymembers': mydata,
+  }
+  return HttpResponse(template.render(context, request))
+
+
+The Object is placed in a variable called mydata, and is sent to the template via the context object as mymembers, and looks like this:
+
+<QuerySet [
+  <Member: Member object (1)>,
+  <Member: Member object (2)>,
+  <Member: Member object (3)>,
+  <Member: Member object (4)>,
+  <Member: Member object (5)>,
+  <Member: Member object (6)>
+]>
+
+As you can see, our Member model contains 5 records, and are listed inside the QuerySet as 5 objects. In the template you can use the mymembers object to generate content :
+<table border='1'>
+  <tr>
+    <th>ID</th>
+    <th>Firstname</th>
+    <th>Lastname</th>
+  </tr>
+  {% for x in mymembers %}
+    <tr>
+      <td>{{ x.id }}</td>
+        <td>{{ x.firstname }}</td>
+      <td>{{ x.lastname }}</td>
+    </tr>
+  {% endfor %}
+  </table>
+
+
+# Get Data
+- There are different methods to get data from a model into a QuerySet.
+
+The values() Method :
+- The values() method allows you to return each object as a python dictionary, with the names and values as key/value pairs :
+
+from django.http import HttpResponse
+from django.template import loader
+from .models import Member
+
+def testing(request):
+  mydata = Member.objects.all().values()
+  template = loader.get_template('template.html')
+  context = {
+    'mymembers': mydata,
+  }
+  return HttpResponse(template.render(context, request))
+
+
+Return Specific Columns :
+- The values_list() method allows you to return only the columns that you specify. Return only the firstname columns:
+
+from django.http import HttpResponse
+from django.template import loader
+from .models import Member
+
+def testing(request):
+  mydata = Member.objects.values_list('firstname')
+  template = loader.get_template('template.html')
+  context = {
+    'mymembers': mydata,
+  }
+  return HttpResponse(template.render(context, request))
+
+Return Specific Rows :
+  - You can filter the search to only return specific rows/ records, by using the filter() method.
+
+from django.http import HttpResponse
+from django.template import loader
+from .models import Member
+
+def testing(request):
+  mydata = Member.objects.filter(firstname='Emil').values()
+  template = loader.get_template('template.html')
+  context = {
+    'mymembers': mydata,
+  }
+  return HttpResponse(template.render(context, request))
+
+1. QuerySet filter :
+    The filter() method is used to filter your search, and allows you to return only the rows that matches the search term.
+
+mydata = Members.objects.filter(firstname = 'Yateesh').values () is same as the SQL Statement
+select * from Members where firstname = 'Yateesh';
+
+2. AND :
+    The filter() method takes the arguments as **kwargs, so you can filter on more than one field by seperating them by a comma
+
+mydata = Members.objects.filter(firstname = 'Yateesh', id = 1).values() is same as the SQL Statement
+select * from Members where firstname = 'Yateesh' and id = 1;
+
+3. OR :
+    Multiple filter() methods need to be created by seperating with '|' pipe character. The results will merge into one model.
+
+mydata = Member.objects.filter(firstname='Yateesh').values() | Member.objects.filter(firstname='Kumar').values() is same as the SQL Statement
+select * from Members where firstname = 'Yateesh' or lastname = 'Kumar';
+
+Also we can use Q Method from django.db.models
+from django.db.models import Q
+mydata = Member.objects.filter(Q(firstname='Emil') | Q(firstname='Tobias')).values()
+
+4. Field LookUps :
+    This helps in place of like operator
+
+mydata = Member.objects.filter(firstname__startswith='L').values() is same as the SQL statement.
+select * from Members where firstname like 'L%'
+
+5. Some more similar Expressions :
+
+contains	    :   Contains the phrase
+icontains	    :   Same as contains, but case-insensitive
+date	        :   Matches a date
+day	            :   Matches a date (day of month, 1-31) (for dates)
+endswith	    :   Ends with
+iendswith	    :   Same as endswidth, but case-insensitive
+exact	        :   An exact match
+iexact	        :   Same as exact, but case-insensitive
+in	            :   Matches one of the values
+isnull	        :   Matches NULL values
+gt	            :   Greater than
+gte	            :   Greater than, or equal to
+hour	        :   Matches an hour (for datetimes)
+lt	            :   Less than
+lte	            :   Less than, or equal to
+minute	        :   Matches a minute (for datetimes)
+month	        :   Matches a month (for dates)
+quarter	        :   Matches a quarter of the year (1-4) (for dates)
+range	        :   Match between
+regex	        :   Matches a regular expression
+iregex	        :   Same as regex, but case-insensitive
+second	        :   Matches a second (for datetimes)
+startswith	    :   Starts with
+istartswith	    :   Same as startswith, but case-insensitive
+time	        :   Matches a time (for datetimes)
+week	        :   Matches a week number (1-53) (for dates)
+week_day	    :   Matches a day of week (1-7) 1 is sunday
+iso_week_day	:   Matches a ISO 8601 day of week (1-7) 1 is monday
+year	        :   Matches a year (for dates)
+iso_year	    :   Matches an ISO 8601 year (for dates)
+
+6. Order By :
+    To sort QuerySets, Django uses the order_by() method in ascending order.
+    
+mydata = Member.objects.all().order_by('firstname').values() is same as SQL Statement:
+SELECT * FROM members ORDER BY firstname;
+
+    To sort QuerySets in Descending Order :
+mydata = Member.objects.all().order_by('-firstname').values()
+SELECT * FROM members ORDER BY firstname desc;
+
+    Multiple order By can be done :
+mydata = Member.objects.all().order_by('lastname', '-id').values()
+
+SELECT * FROM members ORDER BY lastname, Id DESC;
+
+
+#-------------------------------END OF MODULE 5 -------------------------------------------#
+
+#-------------------------------MODULE - 6. STATIC FILES--------------------------------------#
+
+# Create a Static Folder
+- When Building web applications, You probably want to add some static files like images or CSS Files.
+- Start by creating a folder named static in your project, the same place where you created the templates folder.
+- The name of the folder needs to be static.
+- Add a CSS file in static folder - first.css
+
+first.css :
+body {
+    background-color: lightblue;
+    font-family: verdana;
+  }
+
+- Make the changes accordingly to the get.html :
+{% load static %}
+<!DOCTYPE html>
+<html>
+  <link rel="stylesheet" href="{% static 'first.css' %}">
+<body>
+
+<h1>Welcome</h1>
+
+<p>This is my webpage</p>
+
+<table border='1'>
+    {% for x in mymembers %}
+      <tr>
+        <td>{{ x }}</td>
+      </tr>
+    {% endfor %}
+</table>
+
+</body>
+</html> 
+
+Do not forget to set the Debug status to True from settings.py
+But most of the time we prefer to run the server with the Debug to be false. 
+If debug is set to False, we can not run the static files. 
+For that we need to install another library called "WhiteNoise".
+
+
+Django does not have a built-in solution for serving static files, atleast not in production when DEBUG has to be False. We have to use a third-party solution to accomplish this. We will use WhiteNoise, which is a python library, built for serving static files.
+
+Install WhiteNoise: !pip install whitenoise
+
+Modify Settings:
+    To make Django aware of you wanting to run WhiteNoise, you have to specify it in the MIDDLEWARE list in settings.py file.
+        'whitenoise.middleware.WhiteNoiseMiddleware',
+
+Collect Static Files :
+    There are one more action you have to perform before you can serve the static files by collecting them and put them into one specified folder.
+
+### Handle Static Files:
+- Static Files in your project, like stylesheets, JavaScripts and images are not handled automatically by Django when DEBUG = False.
+- When DEBUG = True, this worked fine, all we had to do was to put them in the static folder of the application.
+- When DEBUG = False, static files have to be collected and put in a specified folder before we can use it.
+
+### Collect Static Files:
+- To collect all necessary static files for your project, start by specifying a STATIC_ROOT property in the settings.py file. This specifies a folder where you want to collect your static files. You can call the folder whatever you like, we will call it production files.
+
+settings.py:
+STATIC_ROOT = BASE_DIR / 'productionfiles'
+STATIC_URL = 'static/'
+
+Run the command that can put all static files of the project into this folder, but django has a command that do this for you :
+py manage.py collectstatic
+
+Now we have collected the static files of your project, and if you have installed WhiteNoise. And the Static files will be added and will finally work.
+
+### Global Static Files :
+- Add a Global CSS File:
+    We have learned how to add a static files in the application's static folder, and how to use it in the application. But what if other applications in your project wants to use the file? Then we have to create a folder on the root directory and put the file here. It is not enough to create a static folder in the root directory, and Django will fix the rest. We have to Django where to look for these static files.
+    Start by creating a folder on the project's root level, this folder can be called whatever you like, I will call it "mystaticFiles".
+
+### Modify Settings :
+- You will have to tell Django to also look for static files in the mystaticfiles folder in the root directory, this is done in the settings.py file :
+
+Add a STATICFILES_DIRS list :
+STATICFILES_DIRS = [
+    BASE_DIR / 'mystaticfiles'
+]
+
+In the STATICFILES_DIRS list, you can list all the directories where Django should look for static files.
+The BASE_DIR keyword represents the root directory of the project, and together with the "/mystaticfiles", it means the mystaticfiles folder in the root directory.
+
+### Search Order :
+If you have files with the same name, Django will use the first occurence of the file.
+The search starts in the directories listed in STATICFILES_DIRS, using the order you have provided. Then, if the file is not found, the search continued in the static folder of each application.
+
+### Modify the Template :
+- Now you have global CSS file for the entire project, which can be accessed from all applications. To use it in a template, use the same syntax as you did for the myfirst.css file. Begin the template with the following:
+<link rel="stylesheet" href="{% static 'myglobal.css' %}">
+After that we again need to collectstatic
+
+#-------------------------------END OF MODULE 6 -------------------------------------------#
