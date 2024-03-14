@@ -284,7 +284,7 @@ py manage.py migrate
 
 #-------------------------------END OF MODULE 1 -------------------------------------------#
 
-#-------------------------------MODULE - 2. DISPLAY --------------------------------------#
+#-------------------------------MODULE - 2. DISPLAY DATA--------------------------------------#
 
 Create Template : 
 After creating Models, with the fields and data we want in them, it is time to display the data in a web page. Create a HTML file named 'all_members.html' and place in templates folder.
@@ -510,3 +510,573 @@ def testing(request):
 </html>
 
 Run the server at 127.0.0.1:8000/testing to check how it is working.
+
+#-------------------------------END OF MODULE 2 -------------------------------------------#
+
+#-------------------------------MODULE - 3. DJANGO ADMIN--------------------------------------#
+
+# Django Admin :
+Django Admin is actually a CRUD user interface of all models.!
+To enter the admin user interface, start the server by navigating to the folder and execute this command :
+py manage.py runserver -- and check at 127.0.0.1:8000/admin/
+
+This leads to admin because of the file : my_tennis_club/my_tennis_club/urls.py
+
+The urlpatterns[] list takes requests going to admin/ and sends them to admin.site.urls, which is a part of a built-in application that comes with Django and contains a lot of functionality and user interfaces, one of them being the log-in user interface.
+
+- Create User:
+To be able to log into the admin application, we need to create a user.
+py manage.py createsuperuser
+
+SNAPSHOT :
+Username (leave blank to use default name): shiva
+Email address: shiva@gmail.com
+Password: shiva
+Password (again): shiva
+Bypass password validation and create user anyway? [y/N]: y
+Superuser created successfully.
+
+Just runserver and go to "/admin"
+After that DJANGO Administration , It will site administration - Authentication and Authorization. We can Add groups and users here
+
+The members model is missing, as it should be, you have to tell Django which models that should be visible in the admin interface
+
+# Include Member in the Admin Interface
+To include, The member model in the admin interface, we have to tell Django that this model should be visible in the admin interface. This is done in a file called admin.py and is located in your app's folder, which in our case in the members folder. Open it and it should look like this:
+
+Insert a couple of lines here to make the member model visible in the admin page in admin.py :
+
+from django.contrib import admin
+from .models import Members
+
+admin.site.register(Members)
+
+Now when we see admin page is registered with Models, We get Members operation along with Group and Users
+
+Click 'Members' and see the records that we inserted and when we click on the Member Object, We can see the details
+
+By default, "Member Object (1)" is visible instead of "firstname" and "lastname". 
+
+We can Set the List Display.
+
+# Make the list Display More Reader-Friendly
+When you display a model as a list, Django displays each record as the string representation of the record object, which in our case is "Member Object(1)"
+
+To change this to a more reader-friendly format, we have two choices:
+1. Change the string representation function, __str__() of the Member Model
+2. Set the list_details property of the Member Model
+
+Add this in models.py:
+def __str__(self):
+    return f"{self.firstname} {self.lastname}"
+
+# Set list_display
+- We can control the fields to display by specifying them in a list_display property in the admin.py
+- First create a MemberAdmin() class and specify the list_display tuple, like this.
+
+Change in the admin.py :
+
+from django.contrib import admin
+from .models import Members
+
+class MemberAdmin(admin.ModelAdmin):
+    list_display = ("firstname","lastname", "entry_Date")
+
+admin.site.register(Members, MemberAdmin)
+
+# Update Members
+- Now we are able to create, update and delete members in our database and we start by giving them all a date when they become members
+
+Click the first member, Bhaskar to open the record for editing, and give him a joined_date.
+
+# Add Members 
+- We can add members into our Database and fill valid details
+
+# Delete Members
+- We can delete Members from the list as well from the http://127.0.0.1:8000/admin/members/members/ .
+
+
+#-------------------------------END OF MODULE 3 -------------------------------------------#
+
+#-------------------------------MODULE - 4. DJANGO SYNTAX--------------------------------------#
+
+- Django Template Variables:
+    We can render variables by putting them inside {{ }} brackets
+Create Variable in view :
+    The variable firstname in the example above was sent to the template via a view.
+
+# views.py :
+from django.http import HttpResponse
+from django.template import loader
+
+def testing(request):
+  template = loader.get_template('sample.html')
+  context = {
+    'firstname': 'Linus',
+  }
+  return HttpResponse(template.render(context, request))
+
+Create Variable in template :
+- You can also create variables directly in the template, by using the {% with %} template tag.
+- The variable is available until the {%endwith%} tag appears.
+
+{% with firstname="Tobias" %}
+<h1>Hello {{ firstname }}, how are you?</h1>
+{% endwith %}
+
+# Data from a model :
+- The example above showed an easy approach on how to create and use variables in a template.
+- Normally, Most of the external data you want to use in a template, comes from a model.
+- We have created a model in the previous chapters, called member, which we will use in many examples in the next chapters of this tutorial.
+- To get the data from the member model, we will have to import it in the views.py file and extract data from it in the view.
+
+views.py : 
+from django.http import HttpResponse, HttpResponseRedirect
+from django.template import loader
+from .models import Member
+
+def testing(request):
+  mymembers = Member.objects.all().values()
+  template = loader.get_template('template.html')
+  context = {
+    'mymembers': mymembers,
+  }
+  return HttpResponse(template.render(context, request))
+
+Now we can use the data in the template :
+<ul>
+  {% for x in mymembers %}
+    <li>{{ x.firstname }}</li>
+  {% endfor %}
+</ul>
+
+- For loop loops through the members.
+
+# Template Tags:
+- In Django templates, you can perform programming logic executing if statements and for loops.
+- These keywords, if and for are called "template tags" in Django.
+- To execute template tags, we surround them {% %} brackets.
+
+{% if greeting == 1 %}
+<h1>Hello</h1>
+{% else %}
+<h1> Bye </h1>
+{% endif %}
+
+# Django Code:
+- The template tags are a way of telling Django that here comes something else than plain HTML.
+- The template tags allows us to do some programming on the server before sending HTML to the client.
+
+Following are some Tags:
+
+autoescape  :	Specifies if autoescape mode is on or off
+block	    :   Specifies a block section
+comment	    :   Specifies a comment section
+csrf_token  :   Protects forms from Cross Site Request Forgeries
+cycle	    :   Specifies content to use in each cycle of a loop
+debug	    :   Specifies debugging information
+extends	    :   Specifies a parent template
+filter      :   Filters content before returning it
+firstof	    :   Returns the first not empty variable
+for	        :   Specifies a for loop
+if	        :   Specifies a if statement
+ifchanged   :   Used in for loops. Outputs a block only if a value has changed since the last iteration
+include	    :   Specifies included content/template
+load	    :   Loads template tags from another library
+lorem	    :   Outputs random text
+now	        :   Outputs the current date/time
+regroup	    :   Sorts an object by a group
+resetcycle	:   Used in cycles. Resets the cycle
+spaceless	:   Removes whitespace between HTML tags
+templatetag	:   Outputs a specified template tag
+url	        :   Returns the absolute URL part of a URL
+verbatim	:   Specifies contents that should not be rendered by the template engine
+widthratio	:   Calculates a width value based on the ratio between a given value and a max value
+with	    :   Specifies a variable to use in the block
+
+# Django if Tag :
+- If Statement :
+    An if statement evaluates a variable and executes a block of code if the value is true.
+- Elif :
+    The Elif keyword says that "if the previous conditions were not true, then try this condition".
+- Else :
+    The Else keyword catches anything which is not caught by the preceding conditions.
+
+{% if greeting == 1 %}
+  <h1>Hello</h1>
+{% elif greeting == 2 %}
+  <h1>Welcome</h1>
+{% else %}
+  <h1>Goodbye</h1>
+{% endif %} 
+
+Operators :
+    The above examples uses the == operator, which is used to check if a variable is equal to a value, but there are many other operators we can use, or you can even drop the operator if you just want to check if a variable is not empty.
+
+Symbols used are : == , != , < , > , <= , >=  , and , or , in , not in , is , is not .
+
+For Loops :
+- For loop is used for iterating over a sequence, like looping over items in the array, a list, a dictionary.
+
+Loop through the items of a list :
+{% for x in fruits %}
+    <h1>{{ x }}</h1>
+{% endfor %}
+
+Reversed :
+    The reversed keyword is used when you want to do the loop in reversed order.
+
+Empty :
+    The empty keyword can be used if you want to do something special if the object is empty.
+
+<ul>
+    {% for x in emptytestobject %}
+        <li>{{ x.firstname }}</li>
+    {% empty %}
+        <li>No members</li>
+    {% endfor %}
+</ul>
+
+# Loop Variables :
+    Django has some variables that are available for you inside a loop:
+
+forloop.counter     :   The current iteration, starting at 1.
+forloop.counter()   :   The current iteration, starting at 0.
+forloop.first       :   Allows you to test if the loop is on its first iteration.
+forloop.last        :   Allows you to test if the loop is on its last iteration.
+forloop.revcounter  :   The current iteration if you start at the end and count backwards, ending up at 1.
+forloop.revcounter():   The current iteration if you start at the end and count backwards, ending up at 0.
+
+Comments :
+    Comments allows you to have sections of code that should be ignored.
+
+<h1>Welcome Everyone</h1>
+{% comment %}
+  <h1>Welcome ladies and gentlemen</h1>
+{% endcomment %}
+
+Comment Description :
+    You can add a message to your comment, to help you remember why you wrote the comment, or as message to other people reading the code
+
+<h1>Welcome Everyone</h1>
+{% comment "this was the original welcome message" %}
+    <h1>Welcome ladies and gentlemen</h1>
+{% endcomment %}
+
+Smaller Comments :
+    You can also use the {#....#} tags when commenting out code, which can be easier for smaller comments:
+
+Comment in Views:
+    Views are written in Python and python comments are written with the # Character.
+
+Include :
+    The Include tag allows you to include a template inside the current template. This is useful when you have a block of content that is same for many pages.
+
+- templates/footer.html:
+<p>You have reached the bottom of this page, thank you for your time.</p>
+
+- templates/template.html:
+<h1>Hello</h1>
+<p>This page contains a footer in a template.</p>
+{% include 'footer.html' %} 
+
+Variables in Include :
+    You can send variables into the template by using the with keyword.
+    In the include file, you refer to the variable by using the {{ variablename }} syntax :
+
+- templates/mymenu.html:
+<div>HOME | {{ me }} | ABOUT | FORUM | {{ sponsor }}</div>
+
+- templates/template.html:
+<!DOCTYPE html>
+<html>
+<body>
+
+{% include "mymenu.html" with me="TOBIAS" sponsor="W3SCHOOLS" %}
+
+<h1>Welcome</h1>
+
+<p>This is my webpage</p>
+
+</body>
+</html> 
+
+#-------------------------------END OF MODULE 4 -------------------------------------------#
+
+#-------------------------------MODULE - 5. DJANGO QUERYSETS--------------------------------------#
+
+# Django QuerySet :
+-   A QuerySet is a collection of data from a database.
+-   A QuerySet is built-up as a list of objects.
+-   QuerySet makes it easier to get the data you actually need, by allowing you to filter and order the data at an early stage.
+-   In this tutorial, we will be querying data from the Member table.
+
+Querying Data:
+- In views.py, we have a view for testing called testing where we will test different queries.
+- In the example below, we use the .all() method to get all the records and fields of the Member model :
+
+from django.http import HttpResponse
+from django.template import loader
+from .models import Member
+
+def testing(request):
+  mydata = Member.objects.all()
+  template = loader.get_template('sample.html')
+  context = {
+    'mymembers': mydata,
+  }
+  return HttpResponse(template.render(context, request))
+
+
+The Object is placed in a variable called mydata, and is sent to the template via the context object as mymembers, and looks like this:
+
+<QuerySet [
+  <Member: Member object (1)>,
+  <Member: Member object (2)>,
+  <Member: Member object (3)>,
+  <Member: Member object (4)>,
+  <Member: Member object (5)>,
+  <Member: Member object (6)>
+]>
+
+As you can see, our Member model contains 5 records, and are listed inside the QuerySet as 5 objects. In the template you can use the mymembers object to generate content :
+<table border='1'>
+  <tr>
+    <th>ID</th>
+    <th>Firstname</th>
+    <th>Lastname</th>
+  </tr>
+  {% for x in mymembers %}
+    <tr>
+      <td>{{ x.id }}</td>
+        <td>{{ x.firstname }}</td>
+      <td>{{ x.lastname }}</td>
+    </tr>
+  {% endfor %}
+  </table>
+
+
+# Get Data
+- There are different methods to get data from a model into a QuerySet.
+
+The values() Method :
+- The values() method allows you to return each object as a python dictionary, with the names and values as key/value pairs :
+
+from django.http import HttpResponse
+from django.template import loader
+from .models import Member
+
+def testing(request):
+  mydata = Member.objects.all().values()
+  template = loader.get_template('template.html')
+  context = {
+    'mymembers': mydata,
+  }
+  return HttpResponse(template.render(context, request))
+
+
+Return Specific Columns :
+- The values_list() method allows you to return only the columns that you specify. Return only the firstname columns:
+
+from django.http import HttpResponse
+from django.template import loader
+from .models import Member
+
+def testing(request):
+  mydata = Member.objects.values_list('firstname')
+  template = loader.get_template('template.html')
+  context = {
+    'mymembers': mydata,
+  }
+  return HttpResponse(template.render(context, request))
+
+Return Specific Rows :
+  - You can filter the search to only return specific rows/ records, by using the filter() method.
+
+from django.http import HttpResponse
+from django.template import loader
+from .models import Member
+
+def testing(request):
+  mydata = Member.objects.filter(firstname='Emil').values()
+  template = loader.get_template('template.html')
+  context = {
+    'mymembers': mydata,
+  }
+  return HttpResponse(template.render(context, request))
+
+1. QuerySet filter :
+    The filter() method is used to filter your search, and allows you to return only the rows that matches the search term.
+
+mydata = Members.objects.filter(firstname = 'Yateesh').values () is same as the SQL Statement
+select * from Members where firstname = 'Yateesh';
+
+2. AND :
+    The filter() method takes the arguments as **kwargs, so you can filter on more than one field by seperating them by a comma
+
+mydata = Members.objects.filter(firstname = 'Yateesh', id = 1).values() is same as the SQL Statement
+select * from Members where firstname = 'Yateesh' and id = 1;
+
+3. OR :
+    Multiple filter() methods need to be created by seperating with '|' pipe character. The results will merge into one model.
+
+mydata = Member.objects.filter(firstname='Yateesh').values() | Member.objects.filter(firstname='Kumar').values() is same as the SQL Statement
+select * from Members where firstname = 'Yateesh' or lastname = 'Kumar';
+
+Also we can use Q Method from django.db.models
+from django.db.models import Q
+mydata = Member.objects.filter(Q(firstname='Emil') | Q(firstname='Tobias')).values()
+
+4. Field LookUps :
+    This helps in place of like operator
+
+mydata = Member.objects.filter(firstname__startswith='L').values() is same as the SQL statement.
+select * from Members where firstname like 'L%'
+
+5. Some more similar Expressions :
+
+contains	    :   Contains the phrase
+icontains	    :   Same as contains, but case-insensitive
+date	        :   Matches a date
+day	            :   Matches a date (day of month, 1-31) (for dates)
+endswith	    :   Ends with
+iendswith	    :   Same as endswidth, but case-insensitive
+exact	        :   An exact match
+iexact	        :   Same as exact, but case-insensitive
+in	            :   Matches one of the values
+isnull	        :   Matches NULL values
+gt	            :   Greater than
+gte	            :   Greater than, or equal to
+hour	        :   Matches an hour (for datetimes)
+lt	            :   Less than
+lte	            :   Less than, or equal to
+minute	        :   Matches a minute (for datetimes)
+month	        :   Matches a month (for dates)
+quarter	        :   Matches a quarter of the year (1-4) (for dates)
+range	        :   Match between
+regex	        :   Matches a regular expression
+iregex	        :   Same as regex, but case-insensitive
+second	        :   Matches a second (for datetimes)
+startswith	    :   Starts with
+istartswith	    :   Same as startswith, but case-insensitive
+time	        :   Matches a time (for datetimes)
+week	        :   Matches a week number (1-53) (for dates)
+week_day	    :   Matches a day of week (1-7) 1 is sunday
+iso_week_day	:   Matches a ISO 8601 day of week (1-7) 1 is monday
+year	        :   Matches a year (for dates)
+iso_year	    :   Matches an ISO 8601 year (for dates)
+
+6. Order By :
+    To sort QuerySets, Django uses the order_by() method in ascending order.
+    
+mydata = Member.objects.all().order_by('firstname').values() is same as SQL Statement:
+SELECT * FROM members ORDER BY firstname;
+
+    To sort QuerySets in Descending Order :
+mydata = Member.objects.all().order_by('-firstname').values()
+SELECT * FROM members ORDER BY firstname desc;
+
+    Multiple order By can be done :
+mydata = Member.objects.all().order_by('lastname', '-id').values()
+
+SELECT * FROM members ORDER BY lastname, Id DESC;
+
+
+#-------------------------------END OF MODULE 5 -------------------------------------------#
+
+#-------------------------------MODULE - 6. STATIC FILES--------------------------------------#
+
+# Create a Static Folder
+- When Building web applications, You probably want to add some static files like images or CSS Files.
+- Start by creating a folder named static in your project, the same place where you created the templates folder.
+- The name of the folder needs to be static.
+- Add a CSS file in static folder - first.css
+
+first.css :
+body {
+    background-color: lightblue;
+    font-family: verdana;
+  }
+
+- Make the changes accordingly to the get.html :
+{% load static %}
+<!DOCTYPE html>
+<html>
+  <link rel="stylesheet" href="{% static 'first.css' %}">
+<body>
+
+<h1>Welcome</h1>
+
+<p>This is my webpage</p>
+
+<table border='1'>
+    {% for x in mymembers %}
+      <tr>
+        <td>{{ x }}</td>
+      </tr>
+    {% endfor %}
+</table>
+
+</body>
+</html> 
+
+Do not forget to set the Debug status to True from settings.py
+But most of the time we prefer to run the server with the Debug to be false. 
+If debug is set to False, we can not run the static files. 
+For that we need to install another library called "WhiteNoise".
+
+
+Django does not have a built-in solution for serving static files, atleast not in production when DEBUG has to be False. We have to use a third-party solution to accomplish this. We will use WhiteNoise, which is a python library, built for serving static files.
+
+Install WhiteNoise: !pip install whitenoise
+
+Modify Settings:
+    To make Django aware of you wanting to run WhiteNoise, you have to specify it in the MIDDLEWARE list in settings.py file.
+        'whitenoise.middleware.WhiteNoiseMiddleware',
+
+Collect Static Files :
+    There are one more action you have to perform before you can serve the static files by collecting them and put them into one specified folder.
+
+### Handle Static Files:
+- Static Files in your project, like stylesheets, JavaScripts and images are not handled automatically by Django when DEBUG = False.
+- When DEBUG = True, this worked fine, all we had to do was to put them in the static folder of the application.
+- When DEBUG = False, static files have to be collected and put in a specified folder before we can use it.
+
+### Collect Static Files:
+- To collect all necessary static files for your project, start by specifying a STATIC_ROOT property in the settings.py file. This specifies a folder where you want to collect your static files. You can call the folder whatever you like, we will call it production files.
+
+settings.py:
+STATIC_ROOT = BASE_DIR / 'productionfiles'
+STATIC_URL = 'static/'
+
+Run the command that can put all static files of the project into this folder, but django has a command that do this for you :
+py manage.py collectstatic
+
+Now we have collected the static files of your project, and if you have installed WhiteNoise. And the Static files will be added and will finally work.
+
+### Global Static Files :
+- Add a Global CSS File:
+    We have learned how to add a static files in the application's static folder, and how to use it in the application. But what if other applications in your project wants to use the file? Then we have to create a folder on the root directory and put the file here. It is not enough to create a static folder in the root directory, and Django will fix the rest. We have to Django where to look for these static files.
+    Start by creating a folder on the project's root level, this folder can be called whatever you like, I will call it "mystaticFiles".
+
+### Modify Settings :
+- You will have to tell Django to also look for static files in the mystaticfiles folder in the root directory, this is done in the settings.py file :
+
+Add a STATICFILES_DIRS list :
+STATICFILES_DIRS = [
+    BASE_DIR / 'mystaticfiles'
+]
+
+In the STATICFILES_DIRS list, you can list all the directories where Django should look for static files.
+The BASE_DIR keyword represents the root directory of the project, and together with the "/mystaticfiles", it means the mystaticfiles folder in the root directory.
+
+### Search Order :
+If you have files with the same name, Django will use the first occurence of the file.
+The search starts in the directories listed in STATICFILES_DIRS, using the order you have provided. Then, if the file is not found, the search continued in the static folder of each application.
+
+### Modify the Template :
+- Now you have global CSS file for the entire project, which can be accessed from all applications. To use it in a template, use the same syntax as you did for the myfirst.css file. Begin the template with the following:
+<link rel="stylesheet" href="{% static 'myglobal.css' %}">
+After that we again need to collectstatic
+
+#-------------------------------END OF MODULE 6 -------------------------------------------#
